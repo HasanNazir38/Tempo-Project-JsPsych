@@ -1,0 +1,122 @@
+body {
+    background: #373737;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+/* The instructions box, might not need? */
+.textBox {
+    border-style: solid
+}
+
+/* The play button */
+.playButton {
+    background-color: transparent;
+    margin: 30px auto;
+    top: -25px;
+    border-top: 25px solid transparent;
+    border-left: 50px solid rgba(207, 200, 200, 0.63);
+    border-bottom: 25px solid transparent;
+    cursor: pointer;
+}
+
+/* The next button */
+.nextButton {
+    background-color: transparent;
+    margin: 20px;
+    position: relative;
+    width: 0;
+    height: 0;
+    left: 75%;
+    border-top: 8px solid transparent;
+    border-left: 25px solid rgba(88, 78, 78, 0.63);
+    border-bottom: 8px solid transparent;
+    cursor: pointer;
+}
+
+.pointer {
+    margin: 5px auto;
+    position: relative;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    color: rgba(221, 4, 4, 0.63);
+
+}
+
+#pointerUp {
+    /* margin: 5px auto; */
+    border-bottom: 15px solid;
+    /* border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    position: relative; */
+    top: 10px;
+}
+
+#pointerDown {
+    /* margin: 5px auto; */
+    border-top: 15px solid;
+    /* border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    position: relative; */
+    bottom: 10px;
+}
+
+.container {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+    align-content: space-between;
+    justify-items: center;
+} 
+
+#experimentContainer {
+    border-style: solid;
+    border-color: #979797;
+    border-width: 5px;
+}
+
+/* The Joystick */
+.joyStick {
+    width: 200px;
+    height: 200px;
+}
+
+#joyBox {
+    position: static;
+}
+
+
+/* 
+.border {
+    border-style: solid;
+    border-color: #979797;
+    border-width: 5px;
+    position: relative;
+    display: grid;
+    top: 30px;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
+} */
+
+h1 {
+    position: static;
+    text-align: center;
+    top: -20px;
+    /* left: 475px; */
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+    position: static;
+    top: -20px;
+    text-align: center;
+    /* left: 480px; */
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}

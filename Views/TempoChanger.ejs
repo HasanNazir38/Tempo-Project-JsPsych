@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	    <title>Tempo Determination App</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../style.css">
+        <script src="plugin-tempochanger/joy.js"></script>
+    </head>
+    <body>
+
+        <h1>js psych momnet</h1>
+        <p>Instructions: Use the joystick to adjust the tempo. Once you've found the right tempo, press the next button</p>
+
+        <div id="experimentContainer" class="container">
+
+            <p>Trials Left: <b id="trials"></b></p>
+            <div class="playButton">
+                <input type="hidden" name="playAudio" value="playAudio">
+            </div>
+
+            <div id="joyBox" class="container">
+            <div id="pointerUp" class="pointer"></div>
+            <div id="joyDiv" class="joyStick"></div>
+            <div id="pointerDown" class="pointer"></div>
+            <!-- <p>debug Y :<input id="joyY" type="text" /></p> -->
+        </div>
+
+        
+            <div class="nextButton">
+                <input type="hidden" name="nextButton" id="nextButton">
+            </div>
+        </div>
+        <script type="module" src="shifter.js"></script>  
+        <script type="module" src="app.js"></script>
+    </body>
+</html>

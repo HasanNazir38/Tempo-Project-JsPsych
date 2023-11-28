@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tempo Determination Experiment</title>
+    <script src="https://unpkg.com/jspsych@7.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-audio-button-response@1.0.0"></script>
+    <script src="plugin-tempochanger/index.js"></script>
+    <script src="template.js"></script> 
+    <script src="plugin.js"></script>
+    <script src="plugin-tempochanger/joy.js"></script>
+    <!-- gonna need a script source with taptask and tempochanger -->
+    <link rel="stylesheet" type="text/css" href="Views/style.css">
+    </head>
+  <body></body>
+  <script>
+    var jsPsych = initJsPsych();
+    var timeline =[];
+
+
+    var preload = {
+      type: jsPsychPreload,
+      audio: ['Audio/1_context_75.wav'],
+      auto_preload: true,
+      show_detailed_errors: true
+    //TODO: load in audio
+    };
+    timeline.push(preload);
+
+    var welcome = {
+    type: jsPsychHtmlKeyboardResponse, 
+    stimulus: "Welcome to the Tempo Determination Experiment. Press any key to begin."
+    //maybe make all these into mouse clicks considering its basically all done with the mouse
+    };
+    timeline.push(welcome);
+
+    // var audio = {
+    // type: jsPsychAudioButtonResponse,
+    // stimulus: 'Audio/1_context_75.wav',
+    // choices: ['Low', 'High'],
+    // prompt: "<p>Is the pitch high or low?</p>"
+    // };
+    // timeline.push(audio);
+
+    // var test = {
+    //     type: jsPsychCopyingTask,
+    // }
+
+    // var test = {
+    //     type: jstemplate,
+    // }
+    //  timeline.push(test);
+
+
+    var trial = {
+      type: jsPsychTempoChanger,
+      stimulus: 'Audio/1_context_75.wav', 
+    };
+    timeline.push(trial);
+
+    jsPsych.run(timeline);
+
+    
+  </script>
+</html>

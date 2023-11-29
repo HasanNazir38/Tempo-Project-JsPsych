@@ -1,8 +1,7 @@
 
-//import { PitchShifter } from "/shifter.js"; // why is this a problem???
+//import { jsPsychModule, ParameterType } from "jspsych";
 
-
-var jsPsychTempoChanger = (function (jspsych) {
+var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if you go that route
   "use strict";
 
   const info = {
@@ -80,26 +79,23 @@ var jsPsychTempoChanger = (function (jspsych) {
 
 
       //load audio
-      var context = jsPsych.pluginAPI.audioContext();
-     // console.log(context.AUDIO);
 
-      
+      var context = new (window.AudioContext || window.webkitAudioContext)();
+      // trial.stimulus is the audio source path
+      context.decodeAudioData(fetch(trial.stimulus), onBuffer);
 
-      jsPsych.pluginAPI.getAudioBuffer('Audio/1_context_75.wav')
-        .then(function(buffer){
-          audio = context.createBufferSource();
-          audio.buffer = buffer;
-          audio.connect(context.destination);
-          // run marginchanger?
-          // shifter = new PitchShifter(context, buffer, 1024);
-          // shifter.tempo = tempo/100;
-          // shifter.pitch = 1;
-          // shifter.connect(context.destination);
-          audio.start(context.currentTime);// maybe do this later?
-        })
-        .catch(function(err){
-          console.error('Audio file failed to load')
+      function onBuffer(buffer) {
+        console.log(buffer);
+        shifter = new PitchShifter(context, buffer, 1024);
+        //marginChanger();
+        shifter.tempo = tempo/100;
+        shifter.pitch = 1;
+        shifter.on('play', (detail) => {
+            playing = true;
         });
+      }
+
+
 
 
 
@@ -138,7 +134,8 @@ var jsPsychTempoChanger = (function (jspsych) {
       // Runs when the next button is pressed, ending the trial
       //    --this should maybe pass on the audio tempo or something? for the tap task
       function endTrial() {
-       this.jsPsych.finishTrial(trial_data); //not working for some reason
+        display_element.innerHTML = "";
+        this.jsPsych.finishTrial(trial_data); //not working for some reason
       }
 
       // Function to change the tempo of the audio

@@ -2,11 +2,12 @@
 <html>
   <head>
     <title>Tempo Determination Experiment</title>
-    <script src="https://unpkg.com/jspsych@7.0.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-preload@1.0.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.0.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-audio-button-response@1.0.0"></script>
-    <script src="plugin-tempochanger/index.js"></script>
+    <!-- <script src="https://unpkg.com/jspsych@7.0.0"></script> -->
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugin-preload.js"></script>
+    <script src="jspsych/plugin-html-keyboard-response.js"></script>
+    <script src="jspsych/plugin-audio-button-response.js"></script> 
+    <script src="index.js"></script>
     <script src="template.js"></script> 
     <script src="plugin.js"></script>
     <script src="plugin-tempochanger/joy.js"></script>
@@ -15,9 +16,9 @@
     </head>
   <body></body>
   <script>
-    var jsPsych = initJsPsych();
+    var jsPsych = initJsPsych({
+    });
     var timeline =[];
-
 
     var preload = {
       type: jsPsychPreload,
@@ -35,6 +36,8 @@
     };
     timeline.push(welcome);
 
+    
+
     // var audio = {
     // type: jsPsychAudioButtonResponse,
     // stimulus: 'Audio/1_context_75.wav',
@@ -43,9 +46,6 @@
     // };
     // timeline.push(audio);
 
-    // var test = {
-    //     type: jsPsychCopyingTask,
-    // }
 
     // var test = {
     //     type: jstemplate,
@@ -57,7 +57,8 @@
       type: jsPsychTempoChanger,
       stimulus: 'Audio/1_context_75.wav', 
     };
-    timeline.push(trial);
+   timeline.push(trial);
+    //timeline.push(audio); //run the working trial again
 
     jsPsych.run(timeline);
 

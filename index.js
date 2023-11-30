@@ -1,5 +1,6 @@
 
 //import { jsPsychModule, ParameterType } from "jspsych";
+import { PitchShifter } from "shifter.js";
 
 var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if you go that route
   "use strict";
@@ -62,7 +63,7 @@ var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if 
           "</div>" +
         "</div>";
       display_element.innerHTML = html;
-      console.log(display_element);
+      //console.log(display_element);
 
       const joyStick = display_element.querySelector(".joyStick");
       const next = display_element.querySelector(".nextButton");
@@ -80,21 +81,67 @@ var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if 
 
       //load audio
 
-      var context = new (window.AudioContext || window.webkitAudioContext)();
-      // trial.stimulus is the audio source path
-      context.decodeAudioData(fetch(trial.stimulus), onBuffer);
+      // var context = new (window.AudioContext || window.webkitAudioContext)();
+      // // Functions for decoding and preparing audio
 
-      function onBuffer(buffer) {
-        console.log(buffer);
-        shifter = new PitchShifter(context, buffer, 1024);
-        //marginChanger();
-        shifter.tempo = tempo/100;
-        shifter.pitch = 1;
-        shifter.on('play', (detail) => {
-            playing = true;
-        });
+      // fetch(trial.stimulus);
+
+      // function fetch(url) {
+      //   var request = new XMLHttpRequest();
+      //   request.open('GET', url, true);
+      //   request.responseType = 'arraybuffer';
+      //   request.onload = function () { onSuccess(request) };
+      //   request.send();
+      // }
+
+      // function onSuccess(request) {
+      //   var audioData = request.response;
+      //   context.decodeAudioData(audioData, onBuffer, onDecodeBufferError);
+      // }
+
+      // function onBuffer(buffer) {
+      //   console.log(buffer);
+      //   console.log(context);
+      //   shifter = new PitchShifter(context, buffer, 1024);
+      //   //marginChanger();
+      //   shifter.tempo = tempo/100;
+      //   shifter.pitch = 1;
+      //   shifter.on('play', (detail) => {
+      //       playing = true;
+      //   });
+      // }
+
+      // function onDecodeBufferError(e) {
+      //   console.log('Error decoding buffer: ' + e.message);
+      //   console.log(e);
+      // }
+      
+      var context = this.jsPsych.pluginAPI.audioContext();
+
+      console.log(context)
+      this.jsPsych.pluginAPI
+      .getAudioBuffer(trial.stimulus)
+      .then((buffer) => {
+      if (context !== null) {
+          this.audio = context.createBufferSource();
+          this.audio.buffer = buffer;
+          console.log(buffer); // buffer is actually a buffer now
+          this.audio.connect(context.destination);
+        //  createPitchShifter(buffer);
+          console.log(this.audio); // here this.audio is a buffersource node
+          this.audio.start(context.currentTime);//figure out how to play audiobufferNODE 
       }
-
+     else {
+          this.audio = buffer;
+          this.audio.currentTime = 0;
+          this.audio.play();
+          // throw an error that says "web audio not utilized" or something
+      }
+  })
+      .catch((err) => {
+      console.error(`Failed to load audio file "${trial.stimulus}"`);
+      console.error(err);
+  });
 
 
 
@@ -103,8 +150,8 @@ var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if 
 
       const changeRate = trial.changeRate;                      
       const updateInterval = 500;                   // How often the update set interval thing runs
-      //const margin = jsPsychTempoChanger.jitter;                            // Percentage of variability of the starting tempo (aka Jitter)
-      let trueTempo; 
+      const margin = trial.jitter;                  // Percentage of variability of the starting tempo (aka Jitter)
+      let trueTempo;                                // True tempo of the audio file in ms
       let tempo = 100;                              // Tempo of the audio file as a percentage
       let shifter;                                  // Becomes the PitchShifter variable
       let tracker;                                  // Used for interval beat tracking
@@ -116,6 +163,12 @@ var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if 
 //////////////// FUNCTIONS
 
 //General Fns
+      function createPitchShifter(buffer) {
+        shifter = new PitchShifter(context, buffer, 1024); // need to figure out the import stuff
+        //marginChanger();
+        shifter.tempo = tempo/100;
+        shifter.pitch = 1;
+      }
 
       // Jitters the starting tempo, begins playback, begins timer, and adds joystick listeners
       // potentially change this to onstart? i think thats a jsPsych thing?

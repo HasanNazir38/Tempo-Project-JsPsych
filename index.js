@@ -1,8 +1,8 @@
 
 //import { jsPsychModule, ParameterType } from "jspsych";
-import { PitchShifter } from "shifter.js";
+import { PitchShifter } from "/plugin-tempochanger/shifter.js";
 
-var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if you go that route
+export var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if you go that route
   "use strict";
 
   const info = {

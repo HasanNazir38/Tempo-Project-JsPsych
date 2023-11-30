@@ -23,13 +23,13 @@ timeline.push(welcome);
 
 
 
-// var audio = {
-// type: jsPsychAudioButtonResponse,
-// stimulus: 'Audio/1_context_75.wav',
-// choices: ['Low', 'High'],
-// prompt: "<p>Is the pitch high or low?</p>"
-// };
-// timeline.push(audio);
+var audio = {
+type: jsPsychAudioButtonResponse,
+stimulus: 'Audio/1_context_75.wav',
+choices: ['Low', 'High'],
+prompt: "<p>Is the pitch high or low?</p>"
+};
+timeline.push(audio);
 
 
 // var test = {

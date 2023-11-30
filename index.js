@@ -1,5 +1,4 @@
 
-//import { jsPsychModule, ParameterType } from "jspsych";
 import { PitchShifter } from "/plugin-tempochanger/shifter.js";
 
 export var jsPsychTempoChanger = (function (jspsych) { // will need an export thnig if you go that route
@@ -9,12 +8,6 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
     name: "Tempo-Changer",
     parameters: {
       // The audio file for the specific trial
-
-      // stimulus: {
-      //   type: jspsych.ParameterType.HTML_STRING,
-      //   default: undefined,
-      // },
-
       stimulus: {
         type: jspsych.ParameterType.AUDIO,
         default: undefined,
@@ -33,7 +26,27 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
       jitter: {
         type: jspsych.ParameterType.INT,
         default: 10,
-      }
+      },
+      // Parameters for drawing the joystick
+      joyParameters : {
+        type: jspsych.ParameterType.KEYS,
+        default: { "internalFillColor": "#d41313", "externalStrokeColor": "#d41313"},
+      },
+      // Number of fractional digits in the data
+      precision : {
+        type: jspsych.ParameterType.INT,
+        default: 2,
+      },
+      // Title text at the top of the page
+      title : {
+        type: jspsych.ParameterType.STR,
+        default: null,
+      },
+      // Text above the Joystick Box
+      prompt : {
+        type: jspsych.ParameterType.STR,
+        default: "Use the joystick to adjust tempo",
+      },
       // maybe add something for experiment block, trial, id, etc so that the output file looks like how it does before
     },
   };
@@ -52,7 +65,7 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
     }
     trial(display_element, trial) {
 
-      // Set up the experiment controls
+      // Set up the page participant controls
       var html = 
         '<div id="experimentContainer" class="container">' +
           '<div id="joyBox" class="container">' +
@@ -62,76 +75,42 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
           '<div id="nextButton" class="nextButton">' + "</div>" +
           "</div>" +
         "</div>";
-      display_element.innerHTML = html;
-      //console.log(display_element);
 
+      if (trial.prompt !== null) {
+        html = '<p>' + trial.prompt + "</p>" + html;
+      }
+      if (trial.title !== null) {
+        html = '<h1>' + trial.title + "</h1>" + html;
+      }
+      display_element.innerHTML = html;
+
+      // Finds the joystick and next button
       const joyStick = display_element.querySelector(".joyStick");
       const next = display_element.querySelector(".nextButton");
 
-      // set up the joystick
-                    // could make this set of things a parameter to adjust in the constructor
-      const joyParam = { "internalFillColor": "#d41313", "externalStrokeColor": "#d41313"};
-      var Joy = new JoyStick('joyDiv', joyParam);
+      // Set up the joystick
+      var Joy = new JoyStick('joyDiv', trial.joyParameters);
       
-
-      
-
-
-
-
-      //load audio
-
-      // var context = new (window.AudioContext || window.webkitAudioContext)();
-      // // Functions for decoding and preparing audio
-
-      // fetch(trial.stimulus);
-
-      // function fetch(url) {
-      //   var request = new XMLHttpRequest();
-      //   request.open('GET', url, true);
-      //   request.responseType = 'arraybuffer';
-      //   request.onload = function () { onSuccess(request) };
-      //   request.send();
-      // }
-
-      // function onSuccess(request) {
-      //   var audioData = request.response;
-      //   context.decodeAudioData(audioData, onBuffer, onDecodeBufferError);
-      // }
-
-      // function onBuffer(buffer) {
-      //   console.log(buffer);
-      //   console.log(context);
-      //   shifter = new PitchShifter(context, buffer, 1024);
-      //   //marginChanger();
-      //   shifter.tempo = tempo/100;
-      //   shifter.pitch = 1;
-      //   shifter.on('play', (detail) => {
-      //       playing = true;
-      //   });
-      // }
-
-      // function onDecodeBufferError(e) {
-      //   console.log('Error decoding buffer: ' + e.message);
-      //   console.log(e);
-      // }
-      
+      //Load and play audio
       var context = this.jsPsych.pluginAPI.audioContext();
+      console.log(context);
 
-      console.log(context)
       this.jsPsych.pluginAPI
       .getAudioBuffer(trial.stimulus)
       .then((buffer) => {
       if (context !== null) {
-          this.audio = context.createBufferSource();
-          this.audio.buffer = buffer;
-          console.log(buffer); // buffer is actually a buffer now
-          this.audio.connect(context.destination);
-        //  createPitchShifter(buffer);
-          console.log(this.audio); // here this.audio is a buffersource node
-          this.audio.start(context.currentTime);//figure out how to play audiobufferNODE 
+        context.createBufferSource();
+          //this.audio = context.createBufferSource();
+          // this.audio.buffer = buffer;
+          // this.audio.loop = true;
+         // console.log(this.audio);
+          //this.audio.connect(context.destination);
+          createPitchShifter(buffer);
+          shifter.connect(context.destination);//not looping!!!!!
       }
      else {
+      // this will only run if web audio is not being used, which won't let the pitch shifting work
+          console.log("this should not be running :'( ");
           this.audio = buffer;
           this.audio.currentTime = 0;
           this.audio.play();
@@ -143,86 +122,89 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
       console.error(err);
   });
 
-
-
-
-////////////////////  Variables n whatnot
+////////////////////  Variables and Constants
 
       const changeRate = trial.changeRate;                      
       const updateInterval = 500;                   // How often the update set interval thing runs
       const margin = trial.jitter;                  // Percentage of variability of the starting tempo (aka Jitter)
-      let trueTempo;                                // True tempo of the audio file in ms
-      let tempo = 100;                              // Tempo of the audio file as a percentage
-      let shifter;                                  // Becomes the PitchShifter variable
-      let tracker;                                  // Used for interval beat tracking
-      let update;                                   // Used to update the Y value of the joystick with pressed                    
-      // play audio
-
-
+      const digits = trial.precision;               // Number of digits to round data to
+      const startTime = new Date().getTime();       // The time at which the trial starts in ms
+      var trueTempo = trial.startTempo;             // True tempo of the audio file in ms
+      var tempo = 100;                              // Tempo of the audio file as a percentage
+      var shifter;                                  // Becomes the PitchShifter variable
+      var playing = false;                          // Boolean to indicate audio playing
+      var update;                                   // Used to update the Y value of the joystick with pressed                    
+      var tempoDataPoints = [];                     // Data array with tempo at timestamp in seconds
 
 //////////////// FUNCTIONS
 
-//General Fns
+//Key Component Fns//
+
       function createPitchShifter(buffer) {
-        shifter = new PitchShifter(context, buffer, 1024); // need to figure out the import stuff
-        //marginChanger();
+        if (shifter) {
+          shifter.off(); // remove any current listeners
+        }
+        shifter = new PitchShifter(context, buffer, 1024); 
+        marginChanger();
         shifter.tempo = tempo/100;
         shifter.pitch = 1;
+        shifter.on('play', (detail) => {
+          playing = true;
+      });
+      storeTempoChange(tempo);
       }
 
-      // Jitters the starting tempo, begins playback, begins timer, and adds joystick listeners
-      // potentially change this to onstart? i think thats a jsPsych thing?
-      // function startTrial() {
-      //   marginChanger();
-      //   joyStick.addEventListener("mousedown", startTempoStick);
-      //   next.addEventListener("click", nextButton);
-      //   startTimer();
-      //   //play audio
-      // }
+      // Function to change the tempo of the audio
+      // takes an int representing the new tempo of the audio as a percentage
+      function changeTempo(t) { 
+        shifter.tempo = t/100;
+        shifter.pitch = 1;     // ensures the pitch stays the same after changing tempo
+      }
 
-      // function startTimer() {
-      //   // begins the timer
-      // }
+      // Function to randomly add or subtract a percentage from the tempo based on the "margin" const
+      function marginChanger() {
+        let n = Math.floor(Math.random() * 2) + 1;
+        let ran = (Math.random() * margin)
+        console.log(n);
+        switch (n) {
+            case 1:
+                tempo += ran;
+                trueTempo += ran;
+            case 2:
+                tempo -= ran;
+                trueTempo -= ran;
+        }
+      }
+
+// Data handling Fns //
 
       // Runs when the next button is pressed, ending the trial
       //    --this should maybe pass on the audio tempo or something? for the tap task
       function endTrial() {
         display_element.innerHTML = "";
+        playing = false;
+        var trial_data = {
+          stimulus: trial.stimulus, 
+          tempoData: tempoDataPoints, 
+          startTempo: trueTempo,
+          endTempo: tempo,
+          // might need to add block, stim#, and trial#, could be done in experiment js
+        };
         this.jsPsych.finishTrial(trial_data); //not working for some reason
       }
 
-      // Function to change the tempo of the audio
-      // takes an int representing the new tempo of the audio as a percentage
-      // function changeTempo(t) { 
-      //   shifter.tempo = t/100;
-      //   shifter.pitch = 1;     // ensures the pitch stays the same after changing tempo
-      //   // Resets the beat tracker every time the tempo changes
+      // Pushes the tempo change at its time stamp to the data array
+      function storeTempoChange(t) {
+        let stamp = getTimeStamp().toFixed(digits); 
+        t = t.toFixed(digits);
+        tempoDataPoints.push({t, stamp});
+      }
 
-      //   // clearInterval(tracker);
-      //   // tracker = setInterval(beatTrack, (trueTempo - (trueTempo * deltaT/100))); //this keeps the beats aligned with the tempo
-      // }
-
-      // // Function to randomly add or subtract a percentage from the tempo based on the "margin" const
-      // function marginChanger() {
-      //   trueTempo = jsPsychTempoChanger.startTempo;
-      //   let n = Math.floor(Math.random() * 2) + 1;
-      //   let ran = (Math.random() * margin)
-      //   console.log(n);
-      //   switch (n) {
-      //       case 1:
-      //           tempo += ran;
-      //           trueTempo += ran;
-      //       case 2:
-      //           tempo -= ran;
-      //           trueTempo -= ran;
-      //   }
-      // }
-
-      // // Pushes the tempo change at its time stamp to the data array
-      // function storeTempoChange(t, b) {
-      //   //
-      // }
-      
+      // Finds the current time elapsed from the beginning of the trial and converts it to seconds
+      function getTimeStamp() {
+        let currTime = new Date().getTime() - startTime;
+        return currTime/1000; 
+      }
 
 //Joystick Reacting Fns
 
@@ -237,46 +219,46 @@ next.addEventListener("click", endTrial);
             console.log("Tempo at Minimum");
         } else {
             tempo += rate;
-          //  deltaT += rate; //to help 
             if (rate < 0) {
                 console.log("Decreasing Tempo");
             } else {
                 console.log("Increasing Tempo");
             }
         }
-        //storeTempoChange(tempo, beat); // will need to change beat to timestamp
-       //changeTempo(tempo);
-        //console.log(tempo);
+        storeTempoChange(tempo);
+        changeTempo(tempo);
       }
 
-
+      // Fn that reads when the stick is pressed and begins the tempo changing
       function startTempoStick() {
         console.log("stick pressed");
         joyStick.addEventListener("mousemove", updateTempoStick);
         joyStick.addEventListener("mouseup", stopStick);
       }
       
-        //fn that continuously updates the y value of the stick
+      // Fn that continuously updates the y value of the stick while stick is pressed
       function updateTempoStick() {
         update = setInterval(tempoStick(Joy.GetY()), updateInterval);
       }
 
+      // Fn that reads when the joystick is no longer being used
       function stopStick() {
         clearInterval(update);
         joyStick.removeEventListener("mouseup", stopStick);
         joyStick.removeEventListener("mousemove", updateTempoStick);
         console.log("stick unpressed");
+        console.log(tempoDataPoints); //!!! temp
       }
 
 
 
-      // data saving
-      var trial_data = {
-        stimulus: "audioFileName", //null response
-        // tempoData: [], //null response
-        // startTempo: 1,
-        // endTempo: tempo,
-      };
+// Data Handling
+      // var trial_data = {
+      //   stimulus: trial.stimulus, 
+      //   tempoData: tempoDataPoints, 
+      //   startTempo: trueTempo,
+      //   endTempo: tempo,
+      // };
       //this.jsPsych.finishTrial(trial_data);
     }
   }

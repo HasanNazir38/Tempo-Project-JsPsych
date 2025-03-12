@@ -1,6 +1,6 @@
 node_modules
 jspsych
-tempotest.html
-TempoDetExperiment.html
 plugin.js
 template.js
+scrap.html
+plugin-audio-slider-response.js

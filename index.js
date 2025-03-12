@@ -52,9 +52,11 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
   };
 
   /**
-   * **PLUGIN-NAME**
+   * **Audio Tempo Shifter**
    *
-   * SHORT PLUGIN DESCRIPTION
+   * Plays an audio file and allows you to use a joystick to shift the tempo without
+   * adjusting the pitch.
+   * Uses SoundtouchJS for the tempo adjustment
    *
    * @author HASAN NAZIR
    * @see {@link https://DOCUMENTATION_URL DOCUMENTATION LINK TEXT}
@@ -91,36 +93,27 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
       // Set up the joystick
       var Joy = new JoyStick('joyDiv', trial.joyParameters);
       
-      //Load and play audio
-      var context = this.jsPsych.pluginAPI.audioContext();
-      console.log(context);
+      
+      // //Load and play audio
+       var context = this.jsPsych.pluginAPI.audioContext();
+       var gainNode = context.createGain();
+      // console.log(context);
+      let buffer;
 
-      this.jsPsych.pluginAPI
-      .getAudioBuffer(trial.stimulus)
-      .then((buffer) => {
-      if (context !== null) {
-        context.createBufferSource();
-          //this.audio = context.createBufferSource();
-          // this.audio.buffer = buffer;
-          // this.audio.loop = true;
-         // console.log(this.audio);
-          //this.audio.connect(context.destination);
+      //Fetches audiofile and creates audio buffer
+      async function loadAudio() {
+        try {
+          // Load an audio file
+          const response = await fetch(trial.stimulus);
+          console.log(response);
+          // Decode it
+          buffer = await context.decodeAudioData(await response.arrayBuffer());
           createPitchShifter(buffer);
-          shifter.connect(context.destination);//not looping!!!!!
+        } catch (err) {
+          console.error(`Unable to fetch the audio file. Error: ${err.message}`);
+        }
       }
-     else {
-      // this will only run if web audio is not being used, which won't let the pitch shifting work
-          console.log("this should not be running :'( ");
-          this.audio = buffer;
-          this.audio.currentTime = 0;
-          this.audio.play();
-          // throw an error that says "web audio not utilized" or something
-      }
-  })
-      .catch((err) => {
-      console.error(`Failed to load audio file "${trial.stimulus}"`);
-      console.error(err);
-  });
+      loadAudio();
 
 ////////////////////  Variables and Constants
 
@@ -150,14 +143,29 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
         shifter.pitch = 1;
         shifter.on('play', (detail) => {
           playing = true;
+          //console.log(detail.percentagePlayed);
+          if (detail.percentagePlayed > 99) {
+            shifter.percentagePlayed = 0;      //loops audio
+          }
       });
-      storeTempoChange(tempo);
+        storeTempoChange(tempo);
+        play();
       }
 
+      const play = function (){
+        shifter.connect(gainNode);
+        gainNode.connect(context.destination);
+      } 
+
+      const stop = function(){
+        shifter.disconnect()
+      }
+
+    
       // Function to change the tempo of the audio
       // takes an int representing the new tempo of the audio as a percentage
       function changeTempo(t) { 
-        shifter.tempo = t/100;
+        shifter.tempo = t/100; //undefined cuz createpitchshifter not running rn
         shifter.pitch = 1;     // ensures the pitch stays the same after changing tempo
       }
 
@@ -181,7 +189,9 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
       // Runs when the next button is pressed, ending the trial
       //    --this should maybe pass on the audio tempo or something? for the tap task
       function endTrial() {
+        console.log("ending trial");
         display_element.innerHTML = "";
+        stop();
         playing = false;
         var trial_data = {
           stimulus: trial.stimulus, 
@@ -190,6 +200,7 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
           endTempo: tempo,
           // might need to add block, stim#, and trial#, could be done in experiment js
         };
+        console.log(trial_data);
         this.jsPsych.finishTrial(trial_data); //not working for some reason
       }
 
@@ -206,7 +217,7 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
         return currTime/1000; 
       }
 
-//Joystick Reacting Fns
+/////Joystick Reacting Fns
 
 joyStick.addEventListener("mousedown", startTempoStick);
 next.addEventListener("click", endTrial);

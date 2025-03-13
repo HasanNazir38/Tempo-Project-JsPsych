@@ -188,7 +188,7 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
 
       // Runs when the next button is pressed, ending the trial
       //    --this should maybe pass on the audio tempo or something? for the tap task
-      function endTrial() {
+      const endTrial = () => {
         console.log("ending trial");
         display_element.innerHTML = "";
         stop();
@@ -200,8 +200,8 @@ export var jsPsychTempoChanger = (function (jspsych) { // will need an export th
           endTempo: tempo,
           // might need to add block, stim#, and trial#, could be done in experiment js
         };
-        console.log(trial_data);
-        this.jsPsych.finishTrial(trial_data); //not working for some reason
+        console.log(trial_data); //working
+        this.jsPsych.finishTrial(trial_data); 
       }
 
       // Pushes the tempo change at its time stamp to the data array
@@ -260,20 +260,8 @@ next.addEventListener("click", endTrial);
         console.log("stick unpressed");
         console.log(tempoDataPoints); //!!! temp
       }
-
-
-
-// Data Handling
-      // var trial_data = {
-      //   stimulus: trial.stimulus, 
-      //   tempoData: tempoDataPoints, 
-      //   startTempo: trueTempo,
-      //   endTempo: tempo,
-      // };
-      //this.jsPsych.finishTrial(trial_data);
     }
   }
   TempoChangerPlugin.info = info;
-
   return TempoChangerPlugin;
 })(jsPsychModule);
